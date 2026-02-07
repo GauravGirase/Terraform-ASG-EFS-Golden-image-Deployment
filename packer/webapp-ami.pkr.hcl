@@ -22,7 +22,9 @@ source "amazon-ebs" "webapp" {
     owners      = ["amazon"]
     most_recent = true
   }
-  
+  vpc_id = ""
+  subnet_id = ""
+
   tags = {
     App     = "webapp"
     Version = "{{timestamp}}"

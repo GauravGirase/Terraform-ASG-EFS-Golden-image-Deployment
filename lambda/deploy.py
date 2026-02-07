@@ -16,7 +16,7 @@ def lambda_handler(event, context):
     if not os.path.exists(release_path):
         raise Exception(f"Release {version} not found")
 
-    subprocess.run(["ln", "-sfn", release_path, current_path], check=True)
+    subprocess.run(["sudo", "ln", "-sfn", release_path, current_path], check=True)
 
     # Optional: refresh ASG
     asg.start_instance_refresh(

@@ -26,6 +26,10 @@ resource "aws_subnet" "public_a" {
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "ap-south-1a"
   map_public_ip_on_launch = true
+
+  timeouts {
+    delete = "15m" # or more
+  }
 }
 
 resource "aws_subnet" "public_b" {
@@ -33,6 +37,11 @@ resource "aws_subnet" "public_b" {
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "ap-south-1b"
   map_public_ip_on_launch = true
+
+  timeouts {
+    delete = "15m" # or more
+  }
+
 }
 
 resource "aws_route_table" "public_rt" {
@@ -213,20 +222,20 @@ resource "aws_launch_template" "lt" {
 
   user_data = base64encode(<<EOF
         #!/bin/bash
-        mount -t efs ${aws_efs_file_system.shared.id}:/ /mnt/efs
-
-        mkdir -p /mnt/efs/releases/v1
-        mkdir -p /mnt/efs/shared/uploads
+        sudo mount -t efs ${aws_efs_file_system.shared.id}:/ /mnt/efs
+        sudo mkdir -p /mnt/efs/releases/v1
+        sudo mkdir -p /mnt/efs/shared/uploads
 
         if [ ! -L /mnt/efs/current ]; then
-        ln -s /mnt/efs/releases/v1 /mnt/efs/current
+        sudo ln -s /mnt/efs/releases/v1 /mnt/efs/current
         fi
 
-        echo "<h1>Version 1 - Production App</h1>" > /mnt/efs/releases/v1/index.html
+        sudo bash -c 'echo "<h1>Version 1 - Production App</h1>" > /mnt/efs/releases/v1/index.html'
 
-        systemctl start nginx
+        sudo systemctl start nginx
         EOF
     )
+  
 
     iam_instance_profile {
         name = aws_iam_instance_profile.ec2_profile.name
@@ -234,7 +243,7 @@ resource "aws_launch_template" "lt" {
 }
 
 resource "aws_autoscaling_group" "asg" {
-  desired_capacity = 2
+  desired_capacity = 1
   max_size         = 3
   min_size         = 1
 
@@ -326,6 +335,14 @@ resource "aws_iam_role_policy" "lambda_vpc_policy" {
           "logs:PutLogEvents"
         ],
         Resource = "*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "elasticfilesystem:DescribeMountTargets",
+          "elasticfilesystem:DescribeFileSystems"
+        ],
+        "Resource": "*"
       }
     ]
   })
