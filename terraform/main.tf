@@ -243,7 +243,7 @@ resource "aws_instance" "example" {
 
   user_data = base64encode(<<EOF
         #!/bin/bash
-        sleep 180
+        sleep 600
         sudo yum install -y python3-botocore
         sudo mount -t efs ${aws_efs_file_system.shared.id}:/ /mnt/efs
         sudo mkdir -p /mnt/efs/releases/v1
