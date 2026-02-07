@@ -34,25 +34,6 @@ build {
   sources = ["source.amazon-ebs.webapp"]
 
   provisioner "shell" {
-        inline = [
-            "sudo yum install -y nginx amazon-efs-utils",
-
-            "sudo systemctl enable nginx",
-            
-            "sudo rm -f /etc/nginx/conf.d/default.conf",
-
-            "cat << 'EOF' | sudo tee /etc/nginx/conf.d/webapp.conf
-              server {
-                  listen 80;
-                  root /mnt/efs/current;
-                  index index.html;
-
-                  location / {
-                      try_files \\$uri \\$uri/ =404;
-                  }
-              }
-              EOF
-            "
-        ]
+        script = "setup_script.sh"
     }
 }
