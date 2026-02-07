@@ -241,22 +241,48 @@ resource "aws_instance" "example" {
   depends_on = [null_resource.efs_ready]
 
   user_data = base64encode(<<EOF
-        #!/bin/bash
-        sudo yum install -y python3-botocore
-        sudo mount -t efs ${aws_efs_file_system.shared.id}:/ /mnt/efs
-        sudo mount -t efs fs-05b1639613d287025:/ /mnt/efs
-        sudo mkdir -p /mnt/efs/releases/v1
-        sudo mkdir -p /mnt/efs/shared/uploads
+    #!/bin/bash
+    set -e
 
-        if [ ! -L /mnt/efs/current ]; then
-        sudo ln -s /mnt/efs/releases/v1 /mnt/efs/current
-        fi
+    EFS_DNS="${aws_efs_file_system.shared.dns_name}"
+    MOUNT_POINT="/mnt/efs"
 
-        sudo bash -c 'echo "<h1>Version 1 - Production App</h1>" > /mnt/efs/releases/v1/index.html'
+    # Install EFS utils
+    yum install -y amazon-efs-utils
 
-        sudo systemctl start nginx
-        EOF
+    mkdir -p ${MOUNT_POINT}
+
+    echo "Waiting for EFS DNS..."
+    for i in {1..30}; do
+      if nslookup ${EFS_DNS}; then
+        echo "EFS DNS resolved"
+        break
+      fi
+      sleep 10
+    done
+
+    echo "Mounting EFS..."
+    until mount -t efs ${EFS_DNS}:/ ${MOUNT_POINT}; do
+      echo "Waiting for EFS mount..."
+      sleep 10
+    done
+
+    # Directory structure
+    mkdir -p ${MOUNT_POINT}/releases/v1
+    mkdir -p ${MOUNT_POINT}/shared/uploads
+
+    # Symlink
+    if [ ! -L ${MOUNT_POINT}/current ]; then
+      ln -s ${MOUNT_POINT}/releases/v1 ${MOUNT_POINT}/current
+    fi
+
+    # App content
+    echo "<h1>Version 1 - Production App</h1>" > ${MOUNT_POINT}/releases/v1/index.html
+
+    systemctl start nginx
+    EOF
     )
+
   tags = {
     Name = "ec2-with-iam-role"
   }
