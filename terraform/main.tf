@@ -161,13 +161,12 @@ resource "aws_efs_mount_target" "a" {
   security_groups = [aws_security_group.efs_sg.id]
 }
 
-/*
+
 resource "aws_efs_mount_target" "b" {
   file_system_id  = aws_efs_file_system.shared.id
   subnet_id       = aws_subnet.public_b.id
   security_groups = [aws_security_group.efs_sg.id]
 }
-*/
 
 /*
 
@@ -238,7 +237,7 @@ resource "aws_instance" "example" {
   subnet_id = aws_efs_mount_target.a.id
   security_groups = [aws_security_group.ec2_sg.id]
   depends_on = [null_resource.efs_ready]
-  
+
   user_data = base64encode(<<EOF
         #!/bin/bash
         sudo yum install -y python3-botocore
