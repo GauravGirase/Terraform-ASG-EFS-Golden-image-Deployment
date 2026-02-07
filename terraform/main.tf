@@ -146,6 +146,7 @@ resource "aws_security_group" "efs_sg" {
   }
 }
 
+/*
 # EFS (shared storage)
 resource "aws_efs_file_system" "shared" {
   encrypted = true
@@ -398,3 +399,4 @@ resource "aws_lambda_function" "deploy" {
   }
 }
 
+*/
