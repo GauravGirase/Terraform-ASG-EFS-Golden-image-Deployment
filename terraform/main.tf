@@ -137,7 +137,6 @@ resource "aws_security_group" "efs_sg" {
   }
 }
 
-/*
 # EFS (shared storage)
 resource "aws_efs_file_system" "shared" {
   encrypted = true
@@ -159,6 +158,7 @@ resource "aws_efs_mount_target" "b" {
   security_groups = [aws_security_group.efs_sg.id]
 }
 
+/*
 # Application Load Balancer
 resource "aws_lb" "alb" {
   name               = "web-alb"
