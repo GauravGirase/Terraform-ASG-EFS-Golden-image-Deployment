@@ -215,7 +215,7 @@ data "aws_ami" "latest_webapp" {
   }
 }
 
-
+/*
 resource "null_resource" "efs_ready" {
   depends_on = [aws_efs_mount_target.a, aws_efs_mount_target.b]
 
@@ -229,6 +229,8 @@ resource "null_resource" "efs_ready" {
     EOF
   }
 }
+  depends_on = [null_resource.efs_ready]
+*/
 
 
 
@@ -238,7 +240,6 @@ resource "aws_instance" "example" {
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   subnet_id = aws_subnet.public_a.id
   security_groups = [aws_security_group.ec2_sg.id]
-  depends_on = [null_resource.efs_ready]
 
   user_data = base64encode(<<EOF
         #!/bin/bash
