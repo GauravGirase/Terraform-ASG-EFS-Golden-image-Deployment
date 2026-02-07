@@ -333,7 +333,7 @@ resource "aws_iam_role_policy" "lambda_vpc_policy" {
 
 resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
-  policy_arn = aws_iam_role_policy.lambda_vpc_policy.arn
+  policy_arn = aws_iam_role_policy.lambda_vpc_policy.id
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_asg" {
