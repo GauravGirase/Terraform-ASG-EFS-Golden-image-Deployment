@@ -158,7 +158,7 @@ resource "aws_efs_mount_target" "b" {
   security_groups = [aws_security_group.efs_sg.id]
 }
 
-/*
+
 # Application Load Balancer
 resource "aws_lb" "alb" {
   name               = "web-alb"
@@ -353,4 +353,4 @@ resource "aws_lambda_function" "deploy" {
     local_mount_path = "/mnt/efs"
   }
 }
-*/
+
