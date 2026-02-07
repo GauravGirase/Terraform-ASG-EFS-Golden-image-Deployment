@@ -237,7 +237,7 @@ resource "aws_instance" "example" {
   ami                  = data.aws_ami.latest_webapp.id # replace with valid AMI
   instance_type        = "t3.micro"
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
-  subnet_id = aws_efs_mount_target.a.id
+  subnet_id = aws_subnet.public_a.id
   security_groups = [aws_security_group.ec2_sg.id]
   # depends_on = [null_resource.efs_ready]
 
