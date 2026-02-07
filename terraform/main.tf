@@ -161,12 +161,15 @@ resource "aws_efs_mount_target" "a" {
   security_groups = [aws_security_group.efs_sg.id]
 }
 
+/*
 resource "aws_efs_mount_target" "b" {
   file_system_id  = aws_efs_file_system.shared.id
   subnet_id       = aws_subnet.public_b.id
   security_groups = [aws_security_group.efs_sg.id]
 }
+*/
 
+/*
 
 # Application Load Balancer
 resource "aws_lb" "alb" {
@@ -196,6 +199,7 @@ resource "aws_lb_listener" "listener" {
     target_group_arn = aws_lb_target_group.tg.arn
   }
 }
+*/
 
 data "aws_ami" "latest_webapp" {
   most_recent = true
@@ -212,6 +216,35 @@ data "aws_ami" "latest_webapp" {
   }
 }
 
+resource "aws_instance" "example" {
+  ami                  = data.aws_ami.latest_webapp.id # replace with valid AMI
+  instance_type        = "t3.micro"
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  subnet_id = aws_efs_mount_target.a.id
+  security_groups = [aws_security_group.ec2_sg.id]
+  
+  user_data = base64encode(<<EOF
+        #!/bin/bash
+        sudo yum install -y python3-botocore
+        sudo mount -t efs ${aws_efs_file_system.shared.id}:/ /mnt/efs
+        sudo mkdir -p /mnt/efs/releases/v1
+        sudo mkdir -p /mnt/efs/shared/uploads
+
+        if [ ! -L /mnt/efs/current ]; then
+        sudo ln -s /mnt/efs/releases/v1 /mnt/efs/current
+        fi
+
+        sudo bash -c 'echo "<h1>Version 1 - Production App</h1>" > /mnt/efs/releases/v1/index.html'
+
+        sudo systemctl start nginx
+        EOF
+    )
+  tags = {
+    Name = "ec2-with-iam-role"
+  }
+}
+
+/*
 # Launch Template + ASG
 resource "aws_launch_template" "lt" {
   name_prefix   = "web-lt-"
@@ -242,7 +275,9 @@ resource "aws_launch_template" "lt" {
         name = aws_iam_instance_profile.ec2_profile.name
     }
 }
+*/
 
+/*
 resource "aws_autoscaling_group" "asg" {
   desired_capacity = 1
   max_size         = 3
@@ -260,6 +295,7 @@ resource "aws_autoscaling_group" "asg" {
 
   target_group_arns = [aws_lb_target_group.tg.arn]
 }
+*/
 
 # IAM Role + Instance Profile (Terraform)
 
@@ -295,6 +331,8 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = aws_iam_role.ec2_role.name
 }
 
+
+/*
 resource "aws_iam_role" "lambda_role" {
   name = "deploy-lambda-role"
 
@@ -398,3 +436,4 @@ resource "aws_lambda_function" "deploy" {
     local_mount_path = "/mnt/efs"
   }
 }
+*/
