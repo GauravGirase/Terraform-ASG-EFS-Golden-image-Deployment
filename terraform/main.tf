@@ -216,12 +216,28 @@ data "aws_ami" "latest_webapp" {
   }
 }
 
+resource "null_resource" "efs_ready" {
+  depends_on = [aws_efs_mount_target.a]
+
+  provisioner "local-exec" {
+    command = <<EOF
+      for i in {1..30}; do
+        nslookup ${aws_efs_file_system.shared.dns_name} && exit 0
+        sleep 10
+      done
+      exit 1
+    EOF
+  }
+}
+
+
 resource "aws_instance" "example" {
   ami                  = data.aws_ami.latest_webapp.id # replace with valid AMI
   instance_type        = "t3.micro"
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   subnet_id = aws_efs_mount_target.a.id
   security_groups = [aws_security_group.ec2_sg.id]
+  depends_on = [null_resource.efs_ready]
   
   user_data = base64encode(<<EOF
         #!/bin/bash
