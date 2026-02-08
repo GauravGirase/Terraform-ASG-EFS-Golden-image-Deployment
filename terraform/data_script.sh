@@ -29,6 +29,9 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+ExecStartPre=/bin/sleep 30
+ExecStartPre=/bin/bash -c 'for i in {1..30}; do nslookup github.com && break || sleep 10; done'
+ExecStartPre=/bin/bash -c 'for i in {1..30}; do nslookup ${efs_dns} && break || sleep 10; done'
 ExecStart=/usr/bin/ansible-pull -U https://github.com/GauravGirase/Terraform-ASG-EFS-Golden-image-Deployment.git playbooks/efs.yml
 Environment=PATH=/usr/bin:/usr/local/bin
 StandardOutput=journal
