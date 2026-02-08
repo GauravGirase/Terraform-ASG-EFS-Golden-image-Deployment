@@ -17,8 +17,8 @@ sudo amazon-linux-extras enable ansible2 nginx1
 sudo yum install -y ansible git nginx
 echo "Installing ansible,nginx is done"
 
-
-
+echo "waiting for 120 sec to finish cloud init"
+sleep 120
 
 # Create a systemd service for ansible-pull
 cat <<EOF >/etc/systemd/system/ansible-pull.service
