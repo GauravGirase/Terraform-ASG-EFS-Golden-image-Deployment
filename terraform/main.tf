@@ -201,7 +201,7 @@ resource "aws_lb_listener" "listener" {
 }
 */
 
-
+/*
 data "aws_ami" "latest_webapp" {
   most_recent = true
   owners      = ["self"]
@@ -216,6 +216,7 @@ data "aws_ami" "latest_webapp" {
     values = ["available"]
   }
 }
+*/
 
 
 
