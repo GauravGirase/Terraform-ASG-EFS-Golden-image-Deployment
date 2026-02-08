@@ -146,7 +146,6 @@ resource "aws_security_group" "efs_sg" {
   }
 }
 
-/*
 # EFS (shared storage)
 resource "aws_efs_file_system" "shared" {
   encrypted = true
@@ -168,7 +167,7 @@ resource "aws_efs_mount_target" "b" {
   subnet_id       = aws_subnet.public_b.id
   security_groups = [aws_security_group.efs_sg.id]
 }
-*/
+
 
 /*
 
@@ -202,7 +201,7 @@ resource "aws_lb_listener" "listener" {
 }
 */
 
-/*
+
 data "aws_ami" "latest_webapp" {
   most_recent = true
   owners      = ["self"]
@@ -217,7 +216,7 @@ data "aws_ami" "latest_webapp" {
     values = ["available"]
   }
 }
-*/
+
 
 
 /*
@@ -238,7 +237,7 @@ resource "null_resource" "efs_ready" {
 */
 
 
-/*
+
 resource "aws_instance" "example" {
   ami                  = data.aws_ami.latest_webapp.id # replace with valid AMI
   instance_type        = "t3.micro"
@@ -271,8 +270,6 @@ resource "aws_instance" "example" {
     Name = "ec2-with-iam-role"
   }
 }
-
-*/
 
 /*
 # Launch Template + ASG
