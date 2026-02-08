@@ -40,9 +40,18 @@ systemctl start ansible-pull.service
 
 # Install nginx
 echo "Installing nginx"
-sudo yum install -y python3- || true
-sudo yum install -y nginx
-echo "Installing nginx is done"
+retry_count=0
+until sudo yum install -y nginx; do
+  retry_count=$((retry_count+1))
+  echo "Retry $retry_count for yum install"
+  sleep 15
+  if [ $retry_count -ge 5 ]; then
+    echo "Failed to install nginx after 5 attempts"
+    exit 1
+  fi
+done
+echo "Installing nginx done"
+
 
 sudo mkdir -p /mnt/efs/current
 sudo mkdir -p /etc/nginx/conf.d/
@@ -62,3 +71,8 @@ server {
 }
 EOF
 
+echo "Starting nginx"
+sudo systemctl enable nginx
+sudo systemctl start nginx
+sudo systemctl status nginx
+echo "Finished..!"
