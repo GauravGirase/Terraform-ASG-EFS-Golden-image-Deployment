@@ -251,8 +251,8 @@ resource "aws_instance" "example" {
 
   # Persist EFS info (from Terraform vars)
   cat <<EOT >/etc/efs.env
-  EFS_DNS=${aws_efs_file_system.dns_name}
-  EFS_ID=${aws_efs_file_system.id}
+  EFS_DNS=${aws_efs_file_system.shared.dns_name}
+  EFS_ID=${aws_efs_file_system.shared.id}
   EOT
 
   # Install Ansible
