@@ -146,6 +146,7 @@ resource "aws_security_group" "efs_sg" {
   }
 }
 
+/*
 # EFS (shared storage)
 resource "aws_efs_file_system" "shared" {
   encrypted = true
@@ -167,6 +168,7 @@ resource "aws_efs_mount_target" "b" {
   subnet_id       = aws_subnet.public_b.id
   security_groups = [aws_security_group.efs_sg.id]
 }
+*/
 
 /*
 
@@ -200,6 +202,7 @@ resource "aws_lb_listener" "listener" {
 }
 */
 
+/*
 data "aws_ami" "latest_webapp" {
   most_recent = true
   owners      = ["self"]
@@ -214,6 +217,8 @@ data "aws_ami" "latest_webapp" {
     values = ["available"]
   }
 }
+*/
+
 
 /*
 resource "null_resource" "efs_ready" {
@@ -233,7 +238,7 @@ resource "null_resource" "efs_ready" {
 */
 
 
-
+/*
 resource "aws_instance" "example" {
   ami                  = data.aws_ami.latest_webapp.id # replace with valid AMI
   instance_type        = "t3.micro"
@@ -242,31 +247,32 @@ resource "aws_instance" "example" {
   security_groups = [aws_security_group.ec2_sg.id]
 
   user_data = base64encode(<<EOF
-        #!/bin/bash
-        for i in {1..30}; do
-          if nslookup ${aws_efs_file_system.shared.dns_name}; then
-          break
-          fi
-          sleep 10
-        done
-        sudo yum install -y python3-botocore
-        sudo mount -t efs ${aws_efs_file_system.shared.id}:/ /mnt/efs
-        sudo mkdir -p /mnt/efs/releases/v1
-        sudo mkdir -p /mnt/efs/shared/uploads
+  #!/bin/bash
+  set -euxo pipefail
 
-        if [ ! -L /mnt/efs/current ]; then
-        sudo ln -s /mnt/efs/releases/v1 /mnt/efs/current
-        fi
+  # Persist EFS info (from Terraform vars)
+  cat <<EOT >/etc/efs.env
+  EFS_DNS=${aws_efs_file_system.dns_name}
+  EFS_ID=${aws_efs_file_system.id}
+  EOT
 
-        sudo bash -c 'echo "<h1>Version 1 - Production App</h1>" > /mnt/efs/releases/v1/index.html'
+  # Install Ansible
+  yum install -y amazon-linux-extras
+  amazon-linux-extras enable ansible2
+  yum install -y ansible git
 
-        sudo systemctl start nginx
-        EOF
-    )
+  # Run Ansible (pull model)
+  ansible-pull \
+    -U https://github.com/GauravGirase/Terraform-ASG-EFS-Golden-image-Deployment.git \
+    playbooks/efs.yml
+  EOF
+  )
   tags = {
     Name = "ec2-with-iam-role"
   }
 }
+
+*/
 
 /*
 # Launch Template + ASG

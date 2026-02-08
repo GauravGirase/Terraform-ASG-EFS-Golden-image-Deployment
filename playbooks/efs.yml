@@ -1,0 +1,72 @@
+---
+- name: Mount EFS and prepare directories
+  hosts: localhost
+  connection: local
+  become: true
+
+  vars:
+    mount_point: /mnt/efs
+    release_dir: releases/v1
+
+  tasks:
+    - name: Load EFS environment variables
+      shell: source /etc/efs.env && env
+      register: efs_env
+      changed_when: false
+
+    - name: Extract EFS variables
+      set_fact:
+        efs_dns: "{{ efs_env.stdout_lines | select('match','^EFS_DNS=') | first | regex_replace('EFS_DNS=','') }}"
+        efs_id: "{{ efs_env.stdout_lines | select('match','^EFS_ID=') | first | regex_replace('EFS_ID=','') }}"
+
+    - name: Wait for EFS NFS port
+      wait_for:
+        host: "{{ efs_dns }}"
+        port: 2049
+        timeout: 300
+
+    - name: Install amazon-efs-utils
+      yum:
+        name: amazon-efs-utils
+        state: present
+
+    - name: Create mount directory
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Mount EFS (persistent)
+      mount:
+        path: "{{ mount_point }}"
+        src: "{{ efs_dns }}:/"
+        fstype: efs
+        opts: "_netdev,tls"
+        state: mounted
+
+    - name: Create release directory
+      file:
+        path: "{{ mount_point }}/{{ release_dir }}"
+        state: directory
+
+    - name: Create shared uploads directory
+      file:
+        path: "{{ mount_point }}/shared/uploads"
+        state: directory
+        recurse: true
+
+    - name: Create current symlink
+      file:
+        src: "{{ mount_point }}/{{ release_dir }}"
+        dest: "{{ mount_point }}/current"
+        state: link
+
+    - name: Deploy index.html
+      copy:
+        dest: "{{ mount_point }}/{{ release_dir }}/index.html"
+        content: "<h1>Version 1 - Production App</h1>"
+
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
