@@ -1,21 +1,27 @@
 #!/bin/bash
+exec > >(tee -a /var/log/user-data.log) 2>&1
 set -euxo pipefail
 
+echo "Set the ENV for efs"
 # Persist EFS info (from Terraform vars)
 cat <<EOT >/etc/efs.env
 efs_id: ${efs_id}
 efs_dns: ${efs_dns}
 EOT
+echo "ENV set for efs successfully"
 
 # Install Ansible
+echo "Installing ansible"
 sudo yum install -y amazon-linux-extras
-sudo amazon-linux-extras enable ansible2
+sudo amazon-linux-extras enable ansible2 nginx1
 sudo yum install -y ansible git
+echo "Installing ansible is done"
 
 # Install nginx
-sudo amazon-linux-extras enable nginx1
-sudo yum install -y python3-botocore
+echo "Installing nginx"
+sudo yum install -y python3- || true
 sudo yum install -y nginx
+echo "Installing nginx is done"
 
 sudo mkdir -p /mnt/efs/current
 sudo mkdir -p /etc/nginx/conf.d/
