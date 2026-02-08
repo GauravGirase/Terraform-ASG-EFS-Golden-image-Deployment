@@ -91,7 +91,7 @@
       git:
         repo: "https://github.com/cloudacademy/static-website-example.git"
         dest: "{{ mount_point }}/{{ release_dir }}"
-        version: main    # or a specific tag/branch
+        version: master    # or a specific tag/branch
         force: yes       # ensures any updates are applied
 
     - name: Ensure nginx is running
