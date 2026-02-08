@@ -9,11 +9,6 @@
     release_dir: releases/v1
 
   tasks:
-    - name: Load EFS environment variables
-      shell: source /etc/efs.env && env
-      register: efs_env
-      changed_when: false
-
     - name: Load EFS vars
       include_vars:
         file: /etc/efs.env
