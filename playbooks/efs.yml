@@ -17,9 +17,9 @@
         state: present
 
     - file:
-      path: /etc/nginx/conf.d/
-      state: directory
-      mode: '0755'
+        path: /etc/nginx/conf.d/
+        state: directory
+        mode: '0755'
 
     # 5. Write nginx config
     - copy:
