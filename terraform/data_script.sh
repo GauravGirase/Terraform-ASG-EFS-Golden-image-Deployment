@@ -14,8 +14,11 @@ echo "ENV set for efs successfully"
 echo "Installing ansible"
 sudo yum install -y amazon-linux-extras
 sudo amazon-linux-extras enable ansible2 nginx1
-sudo yum install -y ansible git
-echo "Installing ansible is done"
+sudo yum install -y ansible git nginx
+echo "Installing ansible,nginx is done"
+
+
+
 
 # Create a systemd service for ansible-pull
 cat <<EOF >/etc/systemd/system/ansible-pull.service
@@ -38,41 +41,3 @@ systemctl daemon-reload
 systemctl enable ansible-pull.service
 systemctl start ansible-pull.service
 
-# Install nginx
-echo "Installing nginx"
-retry_count=0
-until sudo yum install -y nginx; do
-  retry_count=$((retry_count+1))
-  echo "Retry $retry_count for yum install"
-  sleep 15
-  if [ $retry_count -ge 5 ]; then
-    echo "Failed to install nginx after 5 attempts"
-    exit 1
-  fi
-done
-echo "Installing nginx done"
-
-
-sudo mkdir -p /mnt/efs/current
-sudo mkdir -p /etc/nginx/conf.d/
-
-# Write new webapp config
-cat << 'EOF' | sudo tee /etc/nginx/conf.d/webapp.conf
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-
-    root /mnt/efs/current;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/index.html =404;
-    }
-}
-EOF
-
-echo "Starting nginx"
-sudo systemctl enable nginx
-sudo systemctl start nginx
-sudo systemctl status nginx
-echo "Finished..!"

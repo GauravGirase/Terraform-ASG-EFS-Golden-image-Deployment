@@ -16,6 +16,23 @@
         name: nginx
         state: present
 
+    - file:
+      path: /etc/nginx/conf.d/
+      state: directory
+      mode: '0755'
+
+    # 5. Write nginx config
+    - copy:
+        dest: /etc/nginx/conf.d/webapp.conf
+        content: |
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+              root /mnt/efs/current;
+              index index.html;
+              location / { try_files $uri $uri/index.html =404; }
+          }
+
     - name: Wait for systemd to settle
       command: systemctl is-system-running
       register: systemd_status
