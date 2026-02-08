@@ -1,4 +1,6 @@
 ---
+
+
 - name: Mount EFS and prepare directories
   hosts: localhost
   connection: local
@@ -9,6 +11,18 @@
     release_dir: releases/v1
 
   tasks:
+    - name: Install nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Wait for systemd to settle
+      command: systemctl is-system-running
+      register: systemd_status
+      until: systemd_status.stdout in ['running', 'degraded']
+      retries: 30
+      delay: 5
+
     - name: Load EFS vars
       include_vars:
         file: /etc/efs.env
