@@ -239,33 +239,18 @@ resource "null_resource" "efs_ready" {
 
 
 resource "aws_instance" "example" {
-  ami                  = data.aws_ami.latest_webapp.id # replace with valid AMI
+  ami                  = "ami-0a289b56122fa70e8" # replace with valid AMI
   instance_type        = "t3.micro"
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
   subnet_id = aws_subnet.public_a.id
   security_groups = [aws_security_group.ec2_sg.id]
-
-  user_data = base64encode(<<EOF
-  #!/bin/bash
-  set -euxo pipefail
-
-  # Persist EFS info (from Terraform vars)
-  cat <<EOT >/etc/efs.env
-  EFS_DNS=${aws_efs_file_system.shared.dns_name}
-  EFS_ID=${aws_efs_file_system.shared.id}
-  EOT
-
-  # Install Ansible
-  yum install -y amazon-linux-extras
-  amazon-linux-extras enable ansible2
-  yum install -y ansible git
-
-  # Run Ansible (pull model)
-  ansible-pull \
-    -U https://github.com/GauravGirase/Terraform-ASG-EFS-Golden-image-Deployment.git \
-    playbooks/efs.yml
-  EOF
+  user_data = base64encode(
+    templatefile("${path.module}/data_script.sh", {
+      efs_id  = aws_efs_file_system.shared.id
+      efs_dns = aws_efs_file_system.shared.dns_name
+    })
   )
+
   tags = {
     Name = "ec2-with-iam-role"
   }
