@@ -19,9 +19,10 @@
     - name: Wait for systemd to settle
       command: systemctl is-system-running
       register: systemd_status
-      until: systemd_status.stdout in ['running', 'degraded']
+      until: systemd_status.stdout in ['running', 'degraded', 'starting']
       retries: 30
       delay: 5
+      ignore_errors: yes
 
     - name: Load EFS vars
       include_vars:
