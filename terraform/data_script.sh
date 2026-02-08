@@ -17,6 +17,27 @@ sudo amazon-linux-extras enable ansible2 nginx1
 sudo yum install -y ansible git
 echo "Installing ansible is done"
 
+# Create a systemd service for ansible-pull
+cat <<EOF >/etc/systemd/system/ansible-pull.service
+[Unit]
+Description=Run Ansible Pull for EFS setup
+After=network-online.target remote-fs.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/ansible-pull -U https://github.com/GauravGirase/Terraform-ASG-EFS-Golden-image-Deployment.git playbooks/efs.yml
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable & start the service
+systemctl daemon-reload
+systemctl enable ansible-pull.service
+systemctl start ansible-pull.service
+
 # Install nginx
 echo "Installing nginx"
 sudo yum install -y python3- || true
@@ -41,5 +62,3 @@ server {
 }
 EOF
 
-# Run Ansible (pull model)
-sudo ansible-pull -U https://github.com/GauravGirase/Terraform-ASG-EFS-Golden-image-Deployment.git playbooks/efs.yml
