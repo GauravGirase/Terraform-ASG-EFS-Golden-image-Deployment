@@ -22,7 +22,7 @@
       until: systemd_status.stdout in ['running', 'degraded', 'starting']
       retries: 30
       delay: 5
-      ignore_errors: yes
+      failed_when: false
 
     - name: Load EFS vars
       include_vars:
